@@ -1,14 +1,14 @@
-
 <?php
-
-require_once "../db.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') :
 
+    require_once "../db.php";
+    require_once "upload.php";
+
 $title = htmlspecialchars($_POST["title"]);
 $text = htmlspecialchars($_POST["text"]);
-$image = htmlspecialchars($_POST["image"]);
-$media = htmlspecialchars($_POST["media"]);
+$image = basename($_FILES["image"]["name"]);
+$media = $_POST["media"];
 $published = htmlspecialchars($_POST["published"]);
 
 $stmt = $db -> prepare("INSERT INTO posts (title, text, image, media, published) 
@@ -22,15 +22,16 @@ $stmt -> bindParam(":published", $published);
 
 $stmt -> execute();
 
-header("Location:../index.php");
+header("Location:index.php");
+exit;
 
 endif;
-
+require_once "header-admin.php";
 ?>
 
 <h2 style="margin: 30px 0">Nytt inlägg</h2>
 
-<form action="#" method="post">
+<form action="#" method="post" enctype="multipart/form-data">
 
     <label for="titel">Rubrik
     <br>
@@ -52,23 +53,17 @@ endif;
     </label>
 <br>
 
-<!-- 
-<form action="upload.php" method="post" enctype="multipart/form-data">
-    Välj en bild:
-    <input type="file" name="fileToUpload" id="fileToUpload">
-    <input type="submit" name="submit" value="Ladda upp bilden">
-</form>
-<br> -->
+<label for="image">Ladda upp en bild:</label>
+  <input type="file" name="image" class="form-control mb-4">
+  <br>
+  <label for="media">Lägg till en inbäddad länk för karta eller video:</label>
+  <input type="text" name="media" class="form-control mb-4">
 
-<label for="media">Lägg till media (karta/film)<br>
-        <textarea 
-            name="media" 
-            id="media" 
-            cols="80" 
-            rows="5" 
-            placeholder="Klistra in URL"></textarea>
-    </label>
-<br>
+ <input 
+            type="hidden" 
+            name="published" 
+            id="hidden-published"
+            value=0>
     <input 
             type="checkbox" 
             name="published" 
@@ -85,12 +80,7 @@ endif;
     <input 
         type="submit"
         class="form-control my-2 btn btn-success"
-        value="Publicera inlägg"
+        value="Skapa inlägg"
         style="width:300px">
 </form>
-
-<?php 
-
-
-
-?>
+<br>

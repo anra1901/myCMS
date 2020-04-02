@@ -12,15 +12,9 @@ echo "<div class='row justify-content-center text-center'>";
       $title = htmlspecialchars($row['title']);
       $text = htmlspecialchars($row['text']);
       $date = htmlspecialchars($row['date']);
-      //$image = htmlspecialchars($row['image']);
-      $media = htmlspecialchars($row['media']);
+      $image = htmlspecialchars($row['image']);
+      $media = $row['media'];
       $published = htmlspecialchars($row['published']);
-
-      // Skapa src till img-taggen
-      if($image): 
-        $image = "images/$image";
-        endif;
-
         ?>
 
 <div class="col-md-10">
@@ -36,17 +30,21 @@ echo "<div class='row justify-content-center text-center'>";
               echo str_replace("\r\n", "<p class=card-text>", $text) . "</p>";
               ?>
               </p>
+   
+        <div>
+              <img class="blog-img" src="images/<?= $image ?>" style="max-width: 80%;">
+          </div>
+  <br>
+        <div>
+              <?= $media ?>
+        </div>
 
-            <img class="card-img-top"
-                src="<?= $image; ?>"
-                alt="<?= $title; ?>">
-
-        <iframe class="card-img-top" src="<?php $media; ?>"></iframe><br>
         <div class="card-footer"><?= "Publicerat: $date" ?></div>
           </div>
         </div>
+        <br>
     </div>
-
+    
  <?php 
     
     endwhile;

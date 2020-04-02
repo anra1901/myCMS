@@ -1,7 +1,5 @@
-<?php 
-
+<?php
 require_once "../db.php";
-require_once "header-admin.php";
 
 function isPublished($published) {
     $checked = "";
@@ -24,46 +22,56 @@ $stmt -> execute();
         $row = $stmt -> fetch(PDO::FETCH_ASSOC);
         $title = htmlspecialchars($row["title"]);
         $text = htmlspecialchars($row["text"]);
-        // $image = htmlspecialchars($row["image"]);
-        $media = htmlspecialchars($row["media"]);
+        $currentImage = $row["image"];
+        $currentMedia = $row["media"];
         $published = htmlspecialchars($row["published"]);
 
     } else {
         header("Location: ../index.php");
+        exit;
     }
+    
 } else {
     header("Location: ../index.php");
+    exit;
 }
 
-if ($_SERVER ["REQUEST_METHOD"] === "POST") :
+if ($_SERVER ["REQUEST_METHOD"] === "POST") {
+    
+    require_once "upload.php";
+    
     $title = $_POST["title"];
     $text = $_POST["text"];
-    //$image = $_POST["image"];
+    if (empty($_FILES["image"]["name"])) {
+        //$image = $_POST["image"];
+        $image = $currentImage;
+        } else {
+        $image = basename($_FILES["image"]["name"]);
+    }
     $media = $_POST["media"];
     $published = $_POST["published"];
     $id = $_GET["id"];
 
     $sql = "UPDATE posts 
-            SET title = :title, text = :text, media = :media, published = :published
+            SET title = :title, text = :text, image = :image, media = :media, published = :published
             WHERE id = :id";
             
     $stml = $db -> prepare($sql);
     $stml -> bindParam(":id", $id);
     $stml -> bindParam(":title", $title);
     $stml -> bindParam(":text", $text);
-    // $stml -> bindParam(":image", $image);
+    $stml -> bindParam(":image", $image);
     $stml -> bindParam(":media", $media);
     $stml -> bindParam(":published", $published);
     $stml -> execute();
 
-    header("Location: index.php");
-endif;
+    header("Location: ../index.php");
+}
+require_once "header-admin.php";?>
 
-?>
+<h2 style="margin: 30px 0">Redigera</h2>
 
-<h2 style="margin: 30px 0">Redigera inlägg</h2>
-
-<form action="#" method="post">
+<form action="#" method="post" enctype="multipart/form-data">
 
     <label for="titel">Rubrik
     <br>
@@ -83,28 +91,32 @@ endif;
             rows="10"><?= $text ?></textarea>
     </label>
 <br>
-
-<!-- 
-<form action="upload.php" method="post" enctype="multipart/form-data">
-    Välj en bild:
-    <input type="file" name="fileToUpload" id="fileToUpload">
-    <input type="submit" name="submit" value="Ladda upp bilden">
-</form>
-<br> -->
-
-<label for="media">Lägg till media (karta/film)<br>
-        <textarea 
-            name="media" 
-            id="media" 
-            cols="80" 
-            rows="5"><?= $media ?></textarea>
-    </label>
+<h6>Nuvarande bild:</h6> 
+<img src="../images/<?= $currentImage ?>" style="max-width:25%;">
+<p>Filnamn: <?= $currentImage ?></p>
+<br>
+<label for="image">Ladda upp en bild:</label>
+  <input type="file" 
+        name="image" 
+        class="form-control mb-4"
+        value='<?= $currentImage ?>'>
+  <br>
+  <label for="media">Lägg till en inbäddad länk för karta eller video:</label>
+  <input type="text" 
+        name="media" 
+        class="form-control mb-4"
+        value='<?= $currentMedia ?>'>
 
    <input 
         type="hidden" 
         name="id" 
         value="<?=$id?>"> 
         <br>
+         <input 
+            type="hidden" 
+            name="published" 
+            id="hidden-published"
+            value=0>
         <input 
             type="checkbox" 
             name="published" 
@@ -116,12 +128,11 @@ endif;
     <input 
         type="submit"
         class="form-control my-2 btn btn-success"
-        value="Publicera inlägg"
+        value="Uppdatera inlägg"
         style="width:300px">
 </form>
+<button class="btn btn-danger">
+    <a href="index.php" style="color:white; text-decoration:none">Avbryt</a>
+  </button>
 
-<?php
-
-require_once "../footer.php";
-
-?>
+<?php require_once "../footer.php"; ?>
